@@ -2,6 +2,13 @@
 from playwright.async_api import Playwright, async_playwright, Request, Route
 from playwright_stealth import stealth
 import pandas as pd, os, sqlite3, pyautogui, asyncio, time, pygsheets, datetime
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
+import dotenv
+dotenv.load_dotenv(os.path.join(os.path.dirname(os.path.realpath(__file__)),"CREDENTIALS",".env"))
 
 pyautogui.FAILSAFE = True
 
@@ -21,6 +28,8 @@ class Dexscreener:
         self.directory = "DEXSCREENER"
         self.file_name = "dexscreener_worksheet.xlsx"
         self.url_key = "dexscreener"
+        self.email= os.getenv("EMAIL")
+        self.email_password= os.getenv("EMAIL_PASSWORD")
         self.gc = pygsheets.authorize(service_account_file=os.path.join(self.current_path,"pygsheets","red-operative-433318-p6-fc23505f7ac9.json"))
         self.sheet_key="1A9aHqXMdh6_CEbJR2IXiE1nzkBJR3mEz9F7EnmsqDs0"
         self.file_path = os.path.join(self.current_path,self.directory,self.sheet_key)
@@ -55,6 +64,43 @@ class Dexscreener:
                 print("Error in setup_GoogleSheet",e.__str__())
                 time.sleep(5)
                 continue
+    
+    async def send_email(self, file_path: str) -> None:
+        """
+        send_email is a function that send email
+        """
+        try:
+            
+            if  os.path.exists(file_path):
+                msg = MIMEMultipart()
+                msg['From'] = self.email
+                msg['To'] = self.email
+                msg['Subject'] = "Dexscreener"
+                body = "Dexscreener"
+                msg.attach(MIMEText(body, 'plain'))
+                attachment = open(file_path, "rb")
+                p = MIMEBase('application', 'octet-stream')
+                p.set_payload((attachment).read())
+                encoders.encode_base64(p)
+                p.add_header('Content-Disposition', "attachment; filename= %s" % file_path)
+                msg.attach(p)
+                
+            else:
+                msg = MIMEMultipart()
+                msg['From'] = self.email
+                msg['To'] = self.email
+                msg['Subject'] = "Dexscreener"
+                body = "Dexscreener"
+                msg.attach(MIMEText(body, 'plain'))
+            
+            server = smtplib.SMTP('smtp.gmail.com', 587)
+            server.starttls()
+            server.login(self.email, self.email_password)
+            server.send_message(msg)
+            server.quit()
+            
+        except Exception as e:
+            print("Error in send_email",e.__str__())
     
     async def intercept_network_request(self, route: Route, request: Request) -> None:
         """
@@ -121,9 +167,11 @@ Element.prototype.attachShadow = function () {
                 time.sleep(5)
             except Exception as e:
                 print(f"Error: {e}")
+                os.makedirs(os.path.join(self.current_path, "CREDENTIALS"), exist_ok=True)
                 await page.context.storage_state(path=os.path.join(self.current_path, "CREDENTIALS", "storage_state.json"))
                 break
-                
+        await page.screenshot(path=os.path.join(self.current_path, "screenshot.png"))
+        await self.send_email(os.path.join(self.current_path, "screenshot.png"))
         await page.pause()
         await browser.close()
     async def main(self) -> None:
