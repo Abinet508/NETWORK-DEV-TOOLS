@@ -21,7 +21,7 @@ class Dexscreener:
         self.directory = "DEXSCREENER"
         self.file_name = "dexscreener_worksheet.xlsx"
         self.url_key = "dexscreener"
-        self.gc = pygsheets.authorize(service_account_file=os.path.join(self.current_path,"pygsheets","pygsheets-service-399508-aafa08c0b1b4.json"))
+        self.gc = pygsheets.authorize(service_account_file=os.path.join(self.current_path,"pygsheets","red-operative-433318-p6-fc23505f7ac9.json"))
         self.sheet_key="1A9aHqXMdh6_CEbJR2IXiE1nzkBJR3mEz9F7EnmsqDs0"
         self.file_path = os.path.join(self.current_path,self.directory,self.sheet_key)
         self.current_url = "https://dexscreener.com/solana/bamgxrark2xrw7wmv6lmj3742d29j2sz8mpwx3ztephd"

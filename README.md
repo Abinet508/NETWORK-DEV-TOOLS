@@ -20,8 +20,8 @@ The purpose of this script is to automate the process of fetching data from the 
 
 1. **Clone the repository:**
    ```sh
-   git clone <repository_url>
-   cd <repository_directory>
+   git clone https://github.com/Abinet508/NETWORK-DEV-TOOLS.git
+   cd NETWORK-DEV-TOOLS
    ```
 
 2. **Install the required packages:**
