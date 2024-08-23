@@ -125,7 +125,7 @@ class Dexscreener:
                 os.makedirs(self.file_path, exist_ok=True)
             self.wks.set_dataframe(self.worksheet, (1, 1))
        
-            
+    
     async def run(self,playwright: Playwright) -> None:
        
         """
@@ -155,15 +155,42 @@ Element.prototype.attachShadow = function () {
         #await page.add_init_script(script=script)
         await stealth.stealth_async(page)
         await context.route("**/*", self.intercept_network_request)
+       
         
         await page.goto(self.current_url,wait_until="load",timeout=3000000)
         while True:
             try:
-                await page.get_by_role("heading", name="Verify you are human by").click()
+                await page.get_by_role("heading", name="Verify you are human by").click(timeout=5000)
                 element_position = await page.locator('div[class="spacer"] >div').bounding_box()
-                element_width = element_position["width"]*10/100
-                center_y = element_position["y"] +element_position["height"]/2
-                pyautogui.click(element_position["x"]+element_width,center_y)
+                window_position = await page.locator('html').bounding_box()
+                element_width = element_position["width"]
+                element_height = element_position["height"]
+                element_x = element_position["x"]
+                element_y = element_position["y"]
+                screen_postion = pyautogui.size()
+                screen_postion_width = screen_postion[0]
+                screen_postion_height = screen_postion[1]
+                if screen_postion_width != window_position["width"]:
+                    element_x_diff = (window_position["width"])/screen_postion_width
+            
+                else:
+                    element_x_diff = 1
+                if screen_postion_height != window_position["height"]:
+                    element_y_diff = (window_position["height"])/screen_postion_height
+                else:
+                    element_y_diff = 1
+                element_x = (element_x+32)/element_x_diff
+                element_y = (element_y+32)/element_y_diff
+                print(f"Element_x_diff: {element_x_diff}", f"Element_y_diff: {element_y_diff}")
+                #calculate the element position on the screen size
+                pyauto_position = pyautogui.position()
+                pyautogui.click(element_x, element_y)
+                #pyautogui.moveTo(element_x, element_y, duration=1)
+                print(f"Point(window_position): {window_position}")
+                print(f"PLAYWRIGHT ELEMENT POSTION: {element_position}")
+                print(f"PYAUTOGUI-Screen-Size: {screen_postion}")
+                print(f"Point ON ELEMENT(x={element_x}, y={element_y})")
+                print("PYAUTOGUI POINT: ",pyauto_position)
                 time.sleep(5)
             except Exception as e:
                 print(f"Error: {e}")
@@ -185,3 +212,7 @@ if __name__ == "__main__":
     asyncio.run(dexscreener.main())
 
 
+# Point(x=423, y=360)
+# SCREEN-Size(width=1920, height=1080)
+# PLAYWRIGHT ELEMENT POSTION: {'x': 312, 'y': 256, 'width': 912, 'height': 67.39999389648438}
+# PYAUTOGUI-MOUSE-Point ON ELEMENT(x=423, y=360)
