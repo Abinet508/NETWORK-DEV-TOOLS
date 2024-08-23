@@ -35,7 +35,8 @@ class Dexscreener:
         self.file_path = os.path.join(self.current_path,self.directory,self.sheet_key)
         self.current_url = "https://dexscreener.com/solana/bamgxrark2xrw7wmv6lmj3742d29j2sz8mpwx3ztephd"
         os.makedirs(self.file_path, exist_ok=True)
-    
+        self.not_verified = True
+        self.after_verification = False
     def setup_GoogleSheet(self):
         """ setup_google_sheet is a function that setup google sheet
         """
@@ -125,7 +126,8 @@ class Dexscreener:
                 os.makedirs(self.file_path, exist_ok=True)
             self.wks.set_dataframe(self.worksheet, (1, 1))
        
-    
+            if "https://dexscreener.com/cdn-cgi/challenge-platform" in request.url and not self.after_verification and self.not_verified:
+                self.not_verified = True
     async def run(self,playwright: Playwright) -> None:
        
         """
@@ -160,7 +162,7 @@ Element.prototype.attachShadow = function () {
         await page.goto(self.current_url,wait_until="load",timeout=3000000)
         while True:
             try:
-                await page.get_by_role("heading", name="Verify you are human by").click(timeout=5000)
+                await page.get_by_role("heading", name="Verify you are human by").click(timeout=10000)
                 element_position = await page.locator('div[class="spacer"] >div').bounding_box()
                 window_position = await page.locator('html').bounding_box()
                 element_width = element_position["width"]
@@ -191,12 +193,15 @@ Element.prototype.attachShadow = function () {
                 print(f"PYAUTOGUI-Screen-Size: {screen_postion}")
                 print(f"Point ON ELEMENT(x={element_x}, y={element_y})")
                 print("PYAUTOGUI POINT: ",pyauto_position)
+                self.not_verified = False
                 time.sleep(5)
             except Exception as e:
                 print(f"Error: {e}")
                 os.makedirs(os.path.join(self.current_path, "CREDENTIALS"), exist_ok=True)
                 await page.context.storage_state(path=os.path.join(self.current_path, "CREDENTIALS", "storage_state.json"))
-                break
+                if self.after_verification or not self.not_verified:
+                    break
+        self.after_verification = True
         await page.screenshot(path=os.path.join(self.current_path, "screenshot.png"))
         await self.send_email(os.path.join(self.current_path, "screenshot.png"))
         await page.pause()
