@@ -160,8 +160,10 @@ Element.prototype.attachShadow = function () {
        
         
         await page.goto(self.current_url,wait_until="load",timeout=3000000)
-        while True:
+        current_url = page.url 
+        while current_url != self.current_url:
             try:
+                
                 print("Waiting for the verification")
                 await page.get_by_role("heading", name="Verify you are human by").click(timeout=10000)
                 element_position = await page.locator('div[class="spacer"] >div').bounding_box()
@@ -196,6 +198,7 @@ Element.prototype.attachShadow = function () {
                 print("PYAUTOGUI POINT: ",pyauto_position)
                 self.not_verified = False
                 time.sleep(5)
+                current_url = page.url
             except Exception as e:
                 print(f"Error: {e}")
                 os.makedirs(os.path.join(self.current_path, "CREDENTIALS"), exist_ok=True)
