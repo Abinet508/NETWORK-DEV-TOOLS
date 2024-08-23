@@ -162,6 +162,7 @@ Element.prototype.attachShadow = function () {
         await page.goto(self.current_url,wait_until="load",timeout=3000000)
         while True:
             try:
+                print("Waiting for the verification")
                 await page.get_by_role("heading", name="Verify you are human by").click(timeout=10000)
                 element_position = await page.locator('div[class="spacer"] >div').bounding_box()
                 window_position = await page.locator('html').bounding_box()
