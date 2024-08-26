@@ -37,6 +37,7 @@ class Dexscreener:
         os.makedirs(self.file_path, exist_ok=True)
         self.not_verified = True
         self.after_verification = False
+        
     def setup_GoogleSheet(self):
         """ setup_google_sheet is a function that setup google sheet
         """
@@ -128,6 +129,7 @@ class Dexscreener:
        
             if "https://dexscreener.com/cdn-cgi/challenge-platform" in request.url and not self.after_verification and self.not_verified:
                 self.not_verified = True
+    
     async def run(self,playwright: Playwright) -> None:
        
         """
@@ -162,8 +164,10 @@ Element.prototype.attachShadow = function () {
         await page.goto(self.current_url,wait_until="load",timeout=3000000)
         current_title = await page.title()
         print("current title: ", current_title) 
-        while self.not_verified or ("Just a moment..." in current_title and not  "RTR $0.004340 - Restore The Republic / SOL on Solana / Meteora - DEX Screener" in current_title):
+        while self.not_verified or ("Just a moment..." in current_title and not  "Restore The Republic / SOL on Solana / Meteora - DEX Screener" in current_title):
             try:
+                if "Restore The Republic / SOL on Solana / Meteora - DEX Screener" in current_title:
+                    break
                 current_title = await page.title()
                 print("Waiting for the verification")
                 await page.get_by_role("heading", name="Verify you are human by").click(timeout=10000)
@@ -203,9 +207,10 @@ Element.prototype.attachShadow = function () {
             except Exception as e:
                 print(f"Error: {e}")
                 os.makedirs(os.path.join(self.current_path, "CREDENTIALS"), exist_ok=True)
-                await page.context.storage_state(path=os.path.join(self.current_path, "CREDENTIALS", "storage_state.json"))
+                
                 if self.after_verification or not self.not_verified:
                     break
+        await page.context.storage_state(path=os.path.join(self.current_path, "CREDENTIALS", "storage_state.json"))
         self.after_verification = True
         await page.screenshot(path=os.path.join(self.current_path, "screenshot.png"))
         await self.send_email(os.path.join(self.current_path, "screenshot.png"))
