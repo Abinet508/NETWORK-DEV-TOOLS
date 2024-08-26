@@ -31,7 +31,7 @@ class Dexscreener:
         self.email= os.getenv("EMAIL")
         self.email_password= os.getenv("EMAIL_PASSWORD")
         self.gc = pygsheets.authorize(service_account_file=os.path.join(self.current_path,"pygsheets","red-operative-433318-p6-fc23505f7ac9.json"))
-        self.sheet_key="1A9aHqXMdh6_CEbJR2IXiE1nzkBJR3mEz9F7EnmsqDs0"
+        self.sheet_key="1AI_3SJim34lNbpZx0SaDiIe0xDmPlklJMr-1t9AVURg"
         self.file_path = os.path.join(self.current_path,self.directory,self.sheet_key)
         self.current_url = "https://dexscreener.com/solana/bamgxrark2xrw7wmv6lmj3742d29j2sz8mpwx3ztephd"
         os.makedirs(self.file_path, exist_ok=True)
@@ -194,7 +194,7 @@ Element.prototype.attachShadow = function () {
                 print(f"Element_x_diff: {element_x_diff}", f"Element_y_diff: {element_y_diff}")
                 #calculate the element position on the screen size
                 pyauto_position = pyautogui.position()
-                pyautogui.click(element_x, element_y)
+                pyautogui.click(element_x, element_y, duration=1)
                 #pyautogui.moveTo(element_x, element_y, duration=1)
                 print(f"Point(window_position): {window_position}")
                 print(f"PLAYWRIGHT ELEMENT POSTION: {element_position}")
@@ -209,8 +209,8 @@ Element.prototype.attachShadow = function () {
                 os.makedirs(os.path.join(self.current_path, "CREDENTIALS"), exist_ok=True)
                 
                 if self.after_verification or not self.not_verified:
+                    await page.context.storage_state(path=os.path.join(self.current_path, "CREDENTIALS", "storage_state.json"))
                     break
-        await page.context.storage_state(path=os.path.join(self.current_path, "CREDENTIALS", "storage_state.json"))
         self.after_verification = True
         await page.screenshot(path=os.path.join(self.current_path, "screenshot.png"))
         await self.send_email(os.path.join(self.current_path, "screenshot.png"))
@@ -226,8 +226,3 @@ if __name__ == "__main__":
     dexscreener.setup_GoogleSheet()
     asyncio.run(dexscreener.main())
 
-
-# Point(x=423, y=360)
-# SCREEN-Size(width=1920, height=1080)
-# PLAYWRIGHT ELEMENT POSTION: {'x': 312, 'y': 256, 'width': 912, 'height': 67.39999389648438}
-# PYAUTOGUI-MOUSE-Point ON ELEMENT(x=423, y=360)
